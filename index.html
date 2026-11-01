@@ -8,9 +8,9 @@
 :root[data-theme="dark"]{--bg:#14171a;--fg:#e6e9ec;--card:#1f2428;--mute:#8d97a3}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px}
-.unit{width:100%;max-width:720px;border-radius:6px}.unit.bz{background:#d8d8d4;border-radius:22px;padding:16px 16px 12px;box-shadow:0 8px 24px rgba(0,0,0,.35);border:2px solid #b9b9b3}
+.unit{width:100%;max-width:720px;background:linear-gradient(#ecebe6,#d6d4cd);border-radius:26px;padding:16px 16px 14px;box-shadow:0 10px 28px rgba(0,0,0,.4),inset 0 2px 0 #fff;border:2px solid #b3b1a8}
 .screen{position:relative;overflow:hidden;background:#000;margin:0 auto;aspect-ratio:var(--ar,4/3);width:min(100%,calc(72vh*var(--arn,1.333)))}
-.screen:not(.ov) .o{display:none}.unit:not(.bz) .led{display:none}
+.screen:not(.ov) .o{display:none}
 canvas{width:100%;height:100%;display:block}
 .o{position:absolute;color:#fff;font:600 13px/1.2 ui-monospace,Menlo,monospace;text-shadow:0 0 3px #000,1px 1px 0 #000;pointer-events:none}
 #rec{top:8px;left:10px}#rec i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e33;margin-right:5px;animation:b 1s steps(2) infinite}
@@ -18,11 +18,20 @@ canvas{width:100%;height:100%;display:block}
 #ch{top:8px;right:10px}#ts{bottom:8px;right:10px}
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.flash.on{animation:fl .25s}
 @keyframes fl{from{opacity:.9}to{opacity:0}}
-.led{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:#555;font-size:11px;letter-spacing:.2em}
-.led b{width:8px;height:8px;border-radius:50%;background:#3c3;box-shadow:0 0 6px #3c3}
+.top{display:flex;justify-content:space-between;align-items:center;margin:0 4px 12px;color:#6d6b63;font:600 11px/1 sans-serif;letter-spacing:.3em}
+.top b{width:9px;height:9px;border-radius:50%;background:#3c3;box-shadow:0 0 7px #3c3}
+.screen{border-radius:8px;box-shadow:0 0 0 7px #1b1d20,0 0 0 9px #8d8b84,inset 0 0 20px #000}
+.ctl{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 6px 4px}
+.grille{width:84px;height:54px;border-radius:10px;background:radial-gradient(#6d6b63 1.6px,transparent 2px) 0 0/9px 9px,#c9c7bf;box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+.call{width:74px;height:74px;border-radius:50%;padding:0;font-size:30px;background:radial-gradient(circle at 35% 30%,#fff,#d9d7cf 60%,#a9a79e);color:#555;border:2px solid #9a988f;box-shadow:0 4px 8px rgba(0,0,0,.35),inset 0 -3px 5px rgba(0,0,0,.15)}
+.call:active{transform:translateY(2px);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.keys{display:flex;flex-direction:column;gap:8px;width:84px}
+.keys button{padding:8px 4px;font-size:12px;border-radius:8px;background:#c9c7bf;color:#444;border:1px solid #9a988f;box-shadow:0 2px 0 #9a988f}
+.keys button.on{background:#3f9d6b;color:#fff;border-color:#2c7a50;box-shadow:0 2px 0 #2c7a50}
+.cap{text-align:center;color:#6d6b63;font-size:10px;letter-spacing:.2em;margin-top:2px}
 .panel{width:100%;max-width:720px;margin-top:14px;background:var(--card);border-radius:14px;padding:14px}
 label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:14px}
-label span{width:5.5em}input[type=range]{flex:1;accent-color:var(--ac)}
+label span{width:7em;flex:none}input[type=range]{flex:1;accent-color:var(--ac)}
 input[type=number]{width:4.8em;font:inherit;font-size:14px;padding:5px;border-radius:8px;background:var(--bg);color:var(--fg);border:1px solid var(--mute)}
 .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
 button,.fb{font:inherit;font-size:14px;border:0;border-radius:10px;padding:10px 14px;background:var(--ac);color:#fff;cursor:pointer}
@@ -33,48 +42,56 @@ select{font:inherit;font-size:14px;padding:9px;border-radius:10px;background:var
 details{font-size:13px;line-height:1.7}summary{cursor:pointer;font-size:14px}
 </style></head><body>
 <div class="unit" id="unit">
- <div class="screen" id="scr"><canvas id="c" width="640" height="480"></canvas>
+ <div class="top"><span>DOOR PHONE</span><b></b></div>
+ <div class="screen ov" id="scr"><canvas id="c" width="640" height="480"></canvas>
   <div class="o" id="rec"><i></i>REC</div><div class="o" id="ch">玄関 CH1</div><div class="o" id="ts"></div>
   <div class="flash" id="fl"></div></div>
- <div class="led"><span>DOOR PHONE</span><b></b></div>
+ <div class="ctl"><div class="grille"></div><button class="call" id="shot" aria-label="シャッター">🔔</button>
+  <div class="keys"><button id="nv">暗視</button><button id="ov" class="on">画面表示</button></div></div>
+ <div class="cap">呼出 ・ 撮影</div>
 </div>
 <div class="panel">
- <div class="row" style="margin:0 0 6px"><button id="shot">📷 シャッター</button>
+ <div class="row" style="margin:0 0 6px"><span style="font-size:14px">縦横比</span>
   <select id="ar"><option>4:3</option><option>16:9</option><option>3:2</option><option>1:1</option><option>3:4</option><option>9:16</option></select></div>
  <div id="params"></div>
  <div class="row">
   <button id="cam">カメラ起動</button><select id="sel" hidden></select>
   <label class="fb" style="margin:0">画像・動画を選ぶ<input id="f" type="file" accept="image/*,video/*" hidden></label>
-  <button class="s" id="nv">暗視: OFF</button>
-  <button class="s" id="ov">ドアホン表示: OFF</button>
  </div>
  <div id="msg">カメラが使えないときは、仮の映像が流れます。</div>
  <div id="gal"></div>
 </div>
 <div class="panel"><details><summary>Readme</summary>
-<p><b>使い方</b><br>「カメラ起動」で背面カメラが始まります(複数あるときは横のメニューで切り替え)。「画像・動画を選ぶ」で手持ちの素材も加工できます。「📷 シャッター」を押すと、下に写真が並びます。スマホは長押し、パソコンは右クリックで保存してください。</p>
+<p><b>使い方</b><br>「カメラ起動」で背面カメラが始まります(複数あるときは横のメニューで切り替え)。「画像・動画を選ぶ」で手持ちの素材も加工できます。右下の🔔ボタンを押すと、ピンポーンと鳴って、下に写真が並びます。スマホは長押し、パソコンは右クリックで保存してください。</p>
 <p><b>縦横比</b><br>4:3(640×480、初期値)のほか、16:9・3:2・1:1・3:4・9:16に変えられます。縦長のときは、170°が縦、110°が横になります。</p>
-<p><b>数値</b><br>歪み=1.00がレンズ仕様(水平170°・垂直110°)のとおりです。0に近づけるとふつうの映像になります。スライダーの右の欄に、0〜1の数字を直接入れても動きます。画質劣化は色の段階の少なさ、色の濃さは鮮やかさ、ノイズは細かいザラつきです。</p>
-<p><b>メモ</b><br>「ドアホン表示」のREC・日時・枠は、写真には写りません。映像は端末の中だけで処理され、外には送られません。</p>
+<p><b>数値</b><br>歪みは魚眼の強さ(0でふつうの映像)です。奥行きの傾きは、下が手前・上が奥になる床のような面を想定して、遠近感を足します。なめらかさは細かい模様をつぶす強さで、周辺ほど強くかかります。コントラストは明暗の差です。スライダーの右の欄に、0〜1の数字を直接入れても動きます。画質劣化は色の段階の少なさ、色の濃さは鮮やかさ、ノイズは細かいザラつきです。</p>
+<p><b>メモ</b><br>画面のREC・日時の表示は、写真には写りません。映像は端末の中だけで処理され、外には送られません。</p>
 </details></div>
 <script>
 const $=id=>document.getElementById(id),cv=$('c'),gl=cv.getContext('webgl'),scr=$('scr');
 const VS='attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}';
-const FS=`precision mediump float;varying vec2 v;uniform sampler2D t;uniform float time,dist,pix,nz,night,sat,ar;uniform vec2 sc,res;
+const FS=`precision mediump float;varying vec2 v;uniform sampler2D t;uniform float time,dist,tilt,smo,con,pix,nz,night,sat,ar;uniform vec2 sc,res;
 float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 const vec3 w=vec3(.3,.59,.11);
-vec2 mp(vec2 q){vec2 p=q*2.-1.;float s=max(dist,.02);
- vec2 hf=ar>=1.?vec2(1.4835,.9599):vec2(.9599,1.4835);vec2 a=p*hf*s;
- vec3 d=vec3(sin(a.x)*cos(a.y),sin(a.y),cos(a.x)*cos(a.y));
- vec2 st=d.xy/(1.+d.z);st/=tan(hf.x*.5*s);st.y*=ar;return st*.46*sc+.5;}
+vec3 blur(vec2 tc,float rad){vec2 px=vec2(1.,ar)*rad;vec3 s=texture2D(t,tc).rgb*2.;
+ for(int i=0;i<6;i++){float an=float(i)*1.0472+.5;s+=texture2D(t,tc+vec2(cos(an),sin(an))*px).rgb;}
+ return s/8.;}
 void main(){
- vec3 c=texture2D(t,mp(v)).rgb;
- c=(c-.5)*1.2+.5;float l=dot(c,w);
+ vec2 p=v*2.-1.;vec2 k=vec2(min(1.,ar),min(1.,1./ar));vec2 pf=p*k;float r=length(pf);
+ float a=max(dist,.03)*1.2217;
+ vec2 dr=r>1e-4?pf/r:vec2(0.);
+ vec2 ray=dr*tan(r*a)/tan(a);
+ vec2 u=ray/(1.-tilt*ray.y);
+ vec2 tc=(u/k)*.475*sc/(1.+.6*tilt)+.5;
+ float rad=(.5+2.5*r*r)*(.35+1.3*smo)*(1.+pix*.7)/640.;
+ vec2 sh=dr*r*r*.006;
+ vec3 c=vec3(blur(tc+sh,rad).r,blur(tc,rad).g,blur(tc-sh,rad).b);
+ c=(c-.5)*mix(1.1,2.2,con)+.5;float l=dot(c,w);
  c=mix(vec3(l),c,mix(1.,1.9,sat));
  c=mix(c,vec3(.1,1.,.3)*pow(clamp(l*1.8,0.,1.),.9),night);
+ float cs=cos(min(r*a,1.3));c*=mix(1.,cs*cs*cs*cs,.6);
  float n=mix(48.,9.,pix);c=floor(c*n+.5)/n;
  c+=(h(v*res+time)-.5)*nz*.35;
- c*=1.-.35*smoothstep(.7,1.5,length(v*2.-1.));
  gl_FragColor=vec4(clamp(c,0.,1.),1.);}`;
 function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o}
 const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
@@ -91,8 +108,8 @@ let W=640,H=480;
 function setSize(k){[W,H]=SIZES[k];cv.width=W;cv.height=H;gl.viewport(0,0,W,H);scr.style.setProperty('--ar',W+'/'+H);scr.style.setProperty('--arn',W/H)}
 $('ar').onchange=e=>setSize(e.target.value);setSize('4:3');
 // スライダー+数値入力
-const P={d:1,p:.5,s:.6,n:.4};
-[['d','歪み'],['p','画質劣化'],['s','色の濃さ'],['n','ノイズ']].forEach(([k,nm])=>{
+const P={d:.7,g:.3,m:.5,c:.5,p:.6,s:.6,n:.4};
+[['d','歪み'],['g','奥行きの傾き'],['m','なめらかさ'],['c','コントラスト'],['p','画質劣化'],['s','色の濃さ'],['n','ノイズ']].forEach(([k,nm])=>{
  const l=document.createElement('label');
  l.innerHTML=`<span>${nm}</span><input type="range" min="0" max="1" step=".01" value="${P[k]}"><input type="number" min="0" max="1" step=".01" value="${P[k]}">`;
  const [r,nn]=l.querySelectorAll('input');
@@ -129,16 +146,20 @@ $('f').onchange=e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObj
  if(f.type.startsWith('video')){vid.src=u;vid.play();kind='video'}
  else{const im=new Image();im.onload=()=>{src=im;kind='image'};im.src=u}
  msg(f.name+' を加工中です。')};
-let night=0;$('nv').onclick=()=>{night=1-night;$('nv').textContent='暗視: '+(night?'ON':'OFF')};
-let ovb=0;$('ov').onclick=()=>{ovb=1-ovb;$('unit').classList.toggle('bz',!!ovb);scr.classList.toggle('ov',!!ovb);$('ov').textContent='ドアホン表示: '+(ovb?'ON':'OFF')};
-let shot=0;$('shot').onclick=()=>{shot=1;const f=$('fl');f.classList.remove('on');void f.offsetWidth;f.classList.add('on')};
+let night=0;$('nv').onclick=()=>{night=1-night;$('nv').classList.toggle('on',!!night)};
+let ovb=1;$('ov').onclick=()=>{ovb=1-ovb;scr.classList.toggle('ov',!!ovb);$('ov').classList.toggle('on',!!ovb)};
+let ac;function chime(){ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+ [[659.3,0],[523.3,.6]].forEach(([f,d])=>{const t=ac.currentTime+d;
+  [1,2.01,3.02].forEach((m,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f*m;o.connect(g);g.connect(ac.destination);
+   g.gain.setValueAtTime(.22/(i+1),t);g.gain.exponentialRampToValueAtTime(.001,t+1.1);o.start(t);o.stop(t+1.2)})})}
+let shot=0;$('shot').onclick=()=>{shot=1;chime();const f=$('fl');f.classList.remove('on');void f.offsetWidth;f.classList.add('on')};
 const p2=n=>String(n).padStart(2,'0');
 function loop(ms){
  const t=ms/1000;let s;
  if(kind==='video'&&vid.readyState>=2)s=vid;else if(kind==='image')s=src;else{fake(t);s=fb}
  gl.bindTexture(gl.TEXTURE_2D,tx);
  try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,s)}catch(e){}
- gl.uniform1f(U('time'),t%100);gl.uniform1f(U('dist'),P.d);gl.uniform1f(U('pix'),P.p);
+ gl.uniform1f(U('time'),t%100);gl.uniform1f(U('dist'),P.d);gl.uniform1f(U('tilt'),P.g);gl.uniform1f(U('smo'),P.m);gl.uniform1f(U('con'),P.c);gl.uniform1f(U('pix'),P.p);
  gl.uniform1f(U('nz'),P.n);gl.uniform1f(U('sat'),P.s);gl.uniform1f(U('night'),night);
  gl.uniform1f(U('ar'),W/H);gl.uniform2f(U('res'),W,H);
  const sw=s.videoWidth||s.naturalWidth||s.width||960,sh2=s.videoHeight||s.naturalHeight||s.height||540,sa=sw/sh2,ca=W/H;
