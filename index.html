@@ -23,7 +23,7 @@ label span{width:5.5em}input[type=range]{flex:1;accent-color:var(--ac)}
 .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 button,.fb{font:inherit;font-size:14px;border:0;border-radius:10px;padding:10px 14px;background:var(--ac);color:#fff;cursor:pointer}
 button.s,.fb{background:transparent;color:var(--fg);border:1px solid var(--mute)}
-#msg{font-size:12px;color:var(--mute);margin-top:8px;min-height:1.2em}
+select{font:inherit;font-size:14px;padding:9px;border-radius:10px;background:var(--card);color:var(--fg);border:1px solid var(--mute);max-width:100%}#msg{font-size:12px;color:var(--mute);margin-top:8px;min-height:1.2em}
 </style></head><body>
 <div class="unit" id="unit">
  <div class="screen" id="scr"><canvas id="c" width="640" height="480"></canvas>
@@ -37,7 +37,7 @@ button.s,.fb{background:transparent;color:var(--fg);border:1px solid var(--mute)
  <label><span>色の濃さ</span><input type="range" id="s" min="0" max="1" step=".01" value=".6"></label>
  <label><span>ノイズ</span><input type="range" id="n" min="0" max="1" step=".01" value=".4"></label>
  <div class="row">
-  <button id="cam">カメラ起動</button>
+  <button id="cam">カメラ起動</button><select id="sel" hidden></select>
   <label class="fb" style="margin:0">画像・動画を選ぶ<input id="f" type="file" accept="image/*,video/*" hidden></label>
   <button class="s" id="nv">暗視: OFF</button>
   <button class="s" id="ov">ドアホン表示: OFF</button>
@@ -51,7 +51,7 @@ const VS='attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4
 const FS=`precision mediump float;varying vec2 v;uniform sampler2D t;uniform float time,dist,pix,nz,night,sat;uniform vec2 sc;
 float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 const vec3 w=vec3(.3,.59,.11);
-vec2 mp(vec2 q){vec2 p=q*2.-1.;vec2 hf=vec2(1.4835,.9599)*max(dist,.02);p=tan(p*hf)/tan(hf);return p*.5*sc+.5;}
+vec2 mp(vec2 q){vec2 p=q*2.-1.;float s=max(dist,.02);vec2 a=p*vec2(1.4835,.9599)*s;vec3 d=vec3(sin(a.x)*cos(a.y),sin(a.y),cos(a.x)*cos(a.y));vec2 st=d.xy/(1.+d.z);st/=tan(.7418*s);st.y/=.75;return st*.46*sc+.5;}
 void main(){
  vec2 res=vec2(640.,480.);
  vec3 c=texture2D(t,mp(v)).rgb;
@@ -84,10 +84,18 @@ function fake(t){
 }
 let src=null,kind='fake',vid=document.createElement('video');vid.muted=true;vid.playsInline=true;vid.loop=true;
 function msg(s){$('msg').textContent=s}
-$('cam').onclick=async()=>{
- try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});
-  vid.srcObject=s;await vid.play();kind='video';msg('カメラ映像を加工中です。')}
- catch(e){msg('カメラを使えませんでした。許可を確認するか、画像・動画を選んでください。')}};
+async function start(id){
+ if(vid.srcObject)vid.srcObject.getTracks().forEach(t=>t.stop());
+ const c=id?{deviceId:{exact:id}}:{facingMode:{ideal:'environment'}};
+ const s=await navigator.mediaDevices.getUserMedia({video:{...c,width:{ideal:1280},height:{ideal:720}}});
+ vid.srcObject=s;await vid.play();kind='video';msg('カメラ映像を加工中です。');
+ const ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+ const sel=$('sel');sel.innerHTML=ds.map((d,i)=>`<option value="${d.deviceId}">${d.label||'カメラ'+(i+1)}</option>`).join('');
+ const cur=s.getVideoTracks()[0].getSettings().deviceId;if(cur)sel.value=cur;sel.hidden=ds.length<2;
+}
+const camErr=()=>msg('カメラを使えませんでした。許可を確認するか、画像・動画を選んでください。');
+$('cam').onclick=()=>start().catch(camErr);
+$('sel').onchange=e=>start(e.target.value).catch(camErr);
 $('f').onchange=e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f);
  if(f.type.startsWith('video')){vid.srcObject=null;vid.src=u;vid.play();kind='video'}
  else{const im=new Image();im.onload=()=>{src=im;kind='image'};im.src=u}
